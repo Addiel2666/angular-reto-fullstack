@@ -1,0 +1,30 @@
+<main class="auth-shell">
+  <section class="login-card">
+    <div class="brand-mark">TX</div>
+    <p class="eyebrow"></p>
+    <h1>Iniciar sesión</h1>
+    <p class="subtitle">Ingresa tus credenciales para registrar y consultar transacciones.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label for="username">Usuario</label>
+      <input id="username" type="text" formControlName="username" autocomplete="username" placeholder="Tu usuario">
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <small>Ingresa un usuario válido de al menos 3 caracteres.</small>
+      }
+
+      <label for="password">Password</label>
+      <input id="password" type="password" formControlName="password" autocomplete="current-password" placeholder="••••••••">
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small>La contraseña es obligatoria.</small>
+      }
+
+      @if (error()) { <div class="alert error">{{ error() }}</div> }
+
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Validando…' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <p class="hint"></p>
+  </section>
+</main>

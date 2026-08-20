@@ -1,0 +1,95 @@
+<header class="topbar">
+  <div><span class="logo">TX</span><strong>Gestor de transacciones</strong></div>
+  <button class="ghost" type="button" (click)="logout()">Cerrar sesión</button>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Reto Fullstack Java</p>
+      <h1>Registrar operación</h1>
+      <p>El secreto se cifra en el navegador con AES-256-GCM antes de enviarse a la primera API.</p>
+    </div>
+    <div class="secure-badge">🔐 AES-256 + JWT</div>
+  </section>
+
+  @if (notification()) {
+    <div class="toast" [class.ok]="notification()?.type === 'ok'" [class.error]="notification()?.type === 'error'">
+      {{ notification()?.text }}
+      <button type="button" (click)="notification.set(null)">×</button>
+    </div>
+  }
+
+  <section class="card">
+    <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid" novalidate>
+      <div>
+        <label for="operacion">Operación</label>
+        <input id="operacion" formControlName="operacion" placeholder="venta">
+        @if (form.controls.operacion.touched && form.controls.operacion.invalid) { <small>Solo caracteres y espacios.</small> }
+      </div>
+      <div>
+        <label for="importe">Importe</label>
+        <input id="importe" formControlName="importe" inputmode="decimal" placeholder="100.00">
+        @if (form.controls.importe.touched && form.controls.importe.invalid) { <small>Usa formato moneda, por ejemplo 100.00.</small> }
+      </div>
+      <div>
+        <label for="cliente">Cliente</label>
+        <input id="cliente" formControlName="cliente" placeholder="Angel">
+        @if (form.controls.cliente.touched && form.controls.cliente.invalid) { <small>Solo caracteres y espacios.</small> }
+      </div>
+      <div>
+        <label for="secreto">Secreto</label>
+        <input id="secreto" type="password" formControlName="secreto" placeholder="Cualquier palabra">
+        @if (form.controls.secreto.touched && form.controls.secreto.invalid) { <small>El secreto es obligatorio.</small> }
+      </div>
+      <div class="form-actions">
+        <button class="primary" type="submit" [disabled]="loading()">{{ loading() ? 'Enviando…' : 'Enviar transacción' }}</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card table-card">
+    <div class="table-head">
+      <div>
+        <h2>Transacciones</h2>
+        <p>{{ totalElements() }} registro(s) en la base de datos</p>
+      </div>
+      <div class="controls">
+        <label>Por página
+          <select [value]="size()" (change)="changeSize($event)"><option>5</option><option>10</option><option>20</option></select>
+        </label>
+        <label>Ordenar por
+          <select [value]="sortField()" (change)="changeSort($event)"><option value="id">ID</option><option value="operacion">Operación</option><option value="importe">Importe</option><option value="cliente">Cliente</option><option value="referencia">Referencia</option><option value="estatus">Estatus</option></select>
+        </label>
+        <button class="icon-btn" type="button" (click)="toggleDirection()" [title]="direction() === 'asc' ? 'Ascendente' : 'Descendente'">{{ direction() === 'asc' ? '↑' : '↓' }}</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Operación</th><th>Importe</th><th>Cliente</th><th>Referencia</th><th>Estatus</th><th></th></tr></thead>
+        <tbody>
+          @if (loadingTable()) {
+            <tr><td colspan="7" class="empty">Cargando…</td></tr>
+          } @else if (transacciones().length === 0) {
+            <tr><td colspan="7" class="empty">No hay transacciones para mostrar.</td></tr>
+          } @else {
+            @for (t of transacciones(); track t.id) {
+              <tr>
+                <td>{{ t.id }}</td><td>{{ t.operacion }}</td><td>{{ t.importe }}</td><td>{{ t.cliente }}</td><td class="mono">{{ t.referencia }}</td>
+                <td><span class="status" [class.cancelled]="t.estatus?.toLowerCase() === 'cancelada'">{{ t.estatus }}</span></td>
+                <td><button class="cancel" type="button" (click)="cancelar(t)" [disabled]="t.estatus?.toLowerCase() === 'cancelada'">Cancelar</button></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button type="button" (click)="changePage(-1)" [disabled]="page() === 0">Anterior</button>
+      <span>Página {{ totalPages() ? page() + 1 : 0 }} de {{ totalPages() }}</span>
+      <button type="button" (click)="changePage(1)" [disabled]="page() + 1 >= totalPages()">Siguiente</button>
+    </div>
+  </section>
+</main>
